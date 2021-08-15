@@ -72,8 +72,17 @@ int main()
     shape.setPosition(  pos);
 
     bool gameover = true;
+    sf::Text text;
+    sf::Font font;
+    font.loadFromFile("Pacifico.ttf");
+    text.setFont(font);
+    text.setCharacterSize(40);
+    text.setColor(sf::Color::White);
 
     sf::Clock timer;
+    sf::Clock gameTime;
+
+    int score = 0;
     while (window.isOpen())
     {
         if (!gameover){
@@ -112,6 +121,11 @@ int main()
 
             shape.setPosition(  pos);
 
+            ///Get time for score.
+            sf::Time s = gameTime.getElapsedTime();
+            score = s.asMilliseconds()/100;
+            text.setString(std::to_string(score));
+            text.setPosition(width/2 -50, 5);
 
             window.clear();
             for (auto& b : bullets)
@@ -123,6 +137,7 @@ int main()
                 window.draw(r);
             }
             window.draw(shape);
+            window.draw(text);
             window.display();
         }
         else {
@@ -138,6 +153,8 @@ int main()
                 pos.y = height / 2;
                 bullets.clear();
                 gameover = false;
+                gameTime.restart();
+                score = 0;
             }
             window.clear();
             for (auto& b : bullets)
@@ -149,10 +166,12 @@ int main()
                 window.draw(r);
             }
             window.draw(shape);
+
+            text.setString("Game Over\r\nYour Score: " + std::to_string(score));
+            text.setPosition(width/2 -50, 5);
+            window.draw(text);
             window.display();
         }
-        
     }
-
     return 0;
 }
