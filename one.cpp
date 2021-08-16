@@ -36,8 +36,8 @@ bool isOutX( Bullet b)
 }
 
 // CIRCLE/RECTANGLE
-bool circleRect(float cx, float cy, float rad, float rx, float ry, float rw, float rh) {
-
+bool circleRect(float cx, float cy, float rad, float rx, float ry, float rw, float rh) 
+{
   // temporary variables to set edges for testing
   float testX = cx;
   float testY = cy;
@@ -85,68 +85,45 @@ int main()
     int score = 0;
     while (window.isOpen())
     {
-        if (!gameover){
-            sf::Event event;
-            while (window.pollEvent(event))
-            {
-                if (event.type == sf::Event::Closed)
-                    window.close();
-            }
-            
-            sf::Time dt = timer.restart();
-            sf::Vector2f newpos = pos;
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+        if (!gameover){     ///< If game is running.
+            sf::Time dt = timer.restart();  ///< Frame rate controller.
 
+            ///< Update position of player.
+            sf::Vector2f newpos = pos;
             newpos.y -= (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))      ?2 * 100 * dt.asSeconds():0;
             newpos.y += (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))    ?2 * 100 * dt.asSeconds():0;
             newpos.x -= (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))    ?2 * 100 * dt.asSeconds():0;
             newpos.x += (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))   ?2 * 100 * dt.asSeconds():0;
-
-            for (auto& b : bullets)
-                b.pos.x-= b.speed * 100 * dt.asSeconds();
-
-            for (auto& b : bullets)
-            {
-                if (circleRect(newpos.x+radius, newpos.y+radius, radius, b.pos.x, b.pos.y, bwidth, bheight))
-                    gameover = true;//return true;
-            }
-            std::remove_if(bullets.begin(), bullets.end(), isOutX);
-
-            if(rand()% 100 > 98)
-                bullets.push_back( createBullet());
-
             if (newpos.x >= 0 && newpos.x <= width-radius * 2)
                 pos.x = newpos.x;
             if (newpos.y > 0 && newpos.y <= height - radius * 2)
                 pos.y = newpos.y;
-
             shape.setPosition(  pos);
+
+            ///< Update bullets and check for colitio.
+            for (auto& b : bullets)
+            {
+                b.pos.x-= b.speed * 100 * dt.asSeconds();
+                if (circleRect(newpos.x+radius, newpos.y+radius, radius, b.pos.x, b.pos.y, bwidth, bheight))
+                    gameover = true;
+            }
+            std::remove_if(bullets.begin(), bullets.end(), isOutX);
+            if(rand()% 100 > 98)
+                bullets.push_back( createBullet());
 
             ///Get time for score.
             sf::Time s = gameTime.getElapsedTime();
             score = s.asMilliseconds()/100;
             text.setString(std::to_string(score));
             text.setPosition(width/2 -50, 5);
-
-            window.clear();
-            for (auto& b : bullets)
-            {
-                sf::RectangleShape r;
-                r.setFillColor(sf::Color::Red);
-                r.setPosition(b.pos);
-                r.setSize(sf::Vector2f(bwidth, bheight));
-                window.draw(r);
-            }
-            window.draw(shape);
-            window.draw(text);
-            window.display();
         }
-        else {
-            sf::Event event;
-            while (window.pollEvent(event))
-            {
-                if (event.type == sf::Event::Closed)
-                    window.close();
-            }
+        else {  ///< If game over.
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
             {
                 pos.x = 20;
@@ -156,22 +133,24 @@ int main()
                 gameTime.restart();
                 score = 0;
             }
-            window.clear();
-            for (auto& b : bullets)
-            {
-                sf::RectangleShape r;
-                r.setFillColor(sf::Color::Red);
-                r.setPosition(b.pos);
-                r.setSize(sf::Vector2f(bwidth, bheight));
-                window.draw(r);
-            }
-            window.draw(shape);
-
             text.setString("Game Over\r\nYour Score: " + std::to_string(score));
             text.setPosition(width/2 -50, 5);
-            window.draw(text);
-            window.display();
         }
+
+        ///< Draw Everyting.
+        window.clear();
+        for (auto& b : bullets)
+        {
+            sf::RectangleShape r;
+            r.setFillColor(sf::Color::Red);
+            r.setPosition(b.pos);
+            r.setSize(sf::Vector2f(bwidth, bheight));
+            window.draw(r);
+        }
+        window.draw(shape);
+        window.draw(text);
+        window.display();
+        
     }
     return 0;
 }
